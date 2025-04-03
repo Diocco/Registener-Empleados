@@ -10,6 +10,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.css$/,       // Archivos CSS
+        use: ['style-loader', 'css-loader'],  // Loaders a usar
+      },
+      {
         test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: {

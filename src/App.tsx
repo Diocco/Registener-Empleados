@@ -3,7 +3,8 @@ import { ipcRenderer } from "electron"
 import { UsuariosI } from "./interfaces/empleados";
 import "./css/index.css"
 import { obtenerFechaActual } from "./helpers/formatearFecha";
-import { marcarEntrada, marcarSalida, obtenerEmpleados } from "./services/usuarios";
+import { marcarEntrada, marcarSalida, obtenerEmpleados, obtenerSalidaHoy, obtenerSalidas } from "./services/usuarios";
+import { SalidasI } from "./interfaces/salidas";
 
 
 
@@ -17,6 +18,13 @@ const Empleado=({empleado}:{empleado:UsuariosI})=>{
 const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
   const [horaSalida,setHoraSalida] = useState<string>("00:00:00")
   const [horaEntrada,setHoraEntrada] = useState<string>("00:00:00")
+
+  useEffect(()=>{
+    obtenerSalidaHoy({usuarioId:empleado.usuarioId})
+    .then(respuesta=>{
+      setHoraSalida(obtenerFechaActual(new Date(respuesta.horaSalida)))
+    })
+  },[])
 
   const salida =(usuarioId: string)=>{
     marcarSalida({usuarioId})
@@ -38,15 +46,31 @@ const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
   </div>)
 }
 
+const Salida=({salida}:{salida:SalidasI})=>{
+  
+  return(
+    <div className="salida">
+      <div>{salida.usuarioId}</div>
+      <div>{salida.horaSalida}</div>
+    </div>
+  )
+}
+
 const App: React.FC = () => {
 
   const [texto,setTexto] = useState("apretame")
   const [empleados,setEmpleados] =useState<UsuariosI[]|undefined>(undefined)
+  const [salidas,setSalidas] =useState<SalidasI[]|undefined>(undefined)
 
   useEffect(()=>{
     obtenerEmpleados()
     .then((respuesta)=>{
       setEmpleados(respuesta)
+    });
+
+    obtenerSalidas()
+    .then((respuesta)=>{
+      setSalidas(respuesta)
     })
   },[])
 
@@ -57,9 +81,13 @@ const App: React.FC = () => {
     {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado}/>))}
   </div>
   <div>
-    <h2>Registros</h2>
+    <h2>Usuarios</h2>
     <div id="registro">
       {empleados && empleados.map((empleado=><Empleado empleado={empleado}/>))}
+    </div>
+    <h2>Salidas</h2>
+    <div>
+      {salidas && salidas.map((salida=><Salida salida={salida}/>))}
     </div>
   </div>
   </>

@@ -19,22 +19,6 @@ export function usuariosControllers() {
         });
     });
 
-    ipcMain.handle('salida-empleado', async (_event, usuarioId: string) => {
-        return new Promise((resolve, reject) => {
-            const id = uuidv4(); 
-            const horaSalida = new Date().getTime()
-
-            db.run(
-                `INSERT INTO salidas (id,usuarioId,horaSalida) VALUES (?, ?, ?)`,
-                [id,usuarioId,horaSalida],
-                function (err) {
-                    if (err) reject('Error al insertar: ' + err.message);
-                    resolve(`Salida registrada con id: ${id}`);
-                }
-            );
-        });
-    });
-
     ipcMain.handle('entrada-empleado', async (_event, usuarioId: string) => {
         return new Promise((resolve, reject) => {
             const id = uuidv4(); 
@@ -46,18 +30,6 @@ export function usuariosControllers() {
                 function (err) {
                     if (err) reject('Error al insertar: ' + err.message);
                     resolve(`Entrada registrada con id: ${id}`);
-                }
-            );
-        });
-    });
-
-    ipcMain.handle('obtener-salidas', async () => {
-        return new Promise((resolve, reject) => {
-            db.all(
-                `SELECT * FROM salidas`,
-                function (err,rows) {
-                    if (err) reject('Error al obtener la tabla de salidas: ' + err.message);
-                    resolve(rows);
                 }
             );
         });

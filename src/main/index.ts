@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { dialog } from 'electron';
 import db from '../db/database';
 import { usuariosControllers } from '../controllers/usuariosControllers';
+import { salidasControllers } from '../controllers/salidasControllers';
 
 // Crear la ventana de Electron
 let mainWindow: BrowserWindow | null = null;
@@ -80,6 +81,7 @@ function createWindow() {
 app.whenReady().then(async () => {
 
   // Crear la ventana de la aplicación Electron
+  salidasControllers();
   usuariosControllers();
   createWindow();
 

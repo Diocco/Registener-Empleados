@@ -47,8 +47,21 @@
     width: 50%;
 }
 
-.salida{
+.registro{
     display: flex;
     flex-direction: row;
     border: 1px solid black;
+    width: 500px;
 }
+
+.registro__nombre{
+    width: 100px;
+    padding-left: 20px;
+}
+.registro__tipo{
+    width: 100px;
+}
+.registro__fecha{
+    width: 200px;
+}
+

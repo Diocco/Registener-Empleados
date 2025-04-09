@@ -19,22 +19,6 @@ export function usuariosControllers() {
         });
     });
 
-    ipcMain.handle('entrada-empleado', async (_event, usuarioId: string) => {
-        return new Promise((resolve, reject) => {
-            const id = uuidv4(); 
-            const horaEntrada = new Date().getTime()
-
-            db.run(
-                `INSERT INTO entradas (id,usuarioId,horaEntrada) VALUES (?, ?, ?)`,
-                [id,usuarioId,horaEntrada],
-                function (err) {
-                    if (err) reject('Error al insertar: ' + err.message);
-                    resolve(`Entrada registrada con id: ${id}`);
-                }
-            );
-        });
-    });
-
     ipcMain.handle('obtener-empleados', async () => {
         return new Promise((resolve, reject) => {
             db.all(

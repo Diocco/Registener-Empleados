@@ -1,6 +1,7 @@
 import { ipcRenderer } from "electron";
 import { UsuariosI } from "../interfaces/empleados";
 import { SalidasI } from "../interfaces/salidas";
+import { EntradasI } from "../interfaces/entradas";
 
 export const agregarEmpleado=async (setTexto: React.Dispatch<React.SetStateAction<string>>)=>{
     const respuesta = await ipcRenderer.invoke('agregar-empleado', "diego");
@@ -29,5 +30,10 @@ export const marcarEntrada=async ({usuarioId}:{usuarioId:string})=>{
 
 export const obtenerSalidaHoy =async ({usuarioId}:{usuarioId:string})=>{
     const respuesta = await ipcRenderer.invoke('obtener-salidaHoy',usuarioId) as SalidasI;
+    return respuesta
+}
+
+export const obtenerEntradaHoy =async ({usuarioId}:{usuarioId:string})=>{
+    const respuesta = await ipcRenderer.invoke('obtener-entradaHoy',usuarioId) as EntradasI;
     return respuesta
 }

@@ -8,6 +8,8 @@ import { dialog } from 'electron';
 import db from '../db/database';
 import { usuariosControllers } from '../controllers/usuariosControllers';
 import { salidasControllers } from '../controllers/salidasControllers';
+import { entradasControllers } from '../controllers/entradasControllers';
+import { registrosControllers } from '../controllers/registrosControllers';
 
 // Crear la ventana de Electron
 let mainWindow: BrowserWindow | null = null;
@@ -82,7 +84,9 @@ app.whenReady().then(async () => {
 
   // Crear la ventana de la aplicación Electron
   salidasControllers();
+  entradasControllers();
   usuariosControllers();
+  registrosControllers();
   createWindow();
 
   // Si hay otras ventanas abiertas, salir de la aplicación cuando todas se cierren

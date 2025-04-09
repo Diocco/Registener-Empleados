@@ -43,6 +43,7 @@ export function salidasControllers() {
                 WHERE usuarioId = ? 
                 AND horaSalida > ? 
                 AND horaSalida < ?
+                ORDER BY horaSalida DESC
                 `,[usuarioId,inicioDelDia,finalDelDia],
                 function (err,row) {
                     if (err) reject('Error al obtener la salida de hoy: ' + err.message);

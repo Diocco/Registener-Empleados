@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { dialog } from 'electron';
 import db from '../db/database';
 import { usuariosControllers } from '../controllers/usuariosControllers';
+import { salidasControllers } from '../controllers/salidasControllers';
 
 // Crear la ventana de Electron
 let mainWindow: BrowserWindow | null = null;
@@ -30,20 +31,44 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, '../index.html')) // Carga el html con todo el programa
 
   // Crear las tablas si no existe
-  db.run(`
-    CREATE TABLE IF NOT EXISTS usuarios (
-      usuarioId TEXT PRIMARY KEY,
-      nombre TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS salidas (
-      hora INTEGER NOT NULL,
-      usuarioId TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS entradas (
-      hora INTEGER NOT NULL,
-      usuarioId TEXT NOT NULL
-    );
-  `);
+  new Promise((resolve, reject) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS usuarios (
+          usuarioId TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL
+        );`,
+        function (err) {
+            if (err) reject('Error al crear la tabla usuarios: ' + err.message);
+            resolve(`Tabla usuarios creada con exito`);
+        }
+      );
+  })
+  new Promise((resolve, reject) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS salidas (
+          id TEXT PRIMARY KEY,
+          usuarioId TEXT NOT NULL,
+          horaSalida INTEGER NOT NULL
+        );`,
+        function (err) {
+            if (err) reject('Error al crear la tabla salidas: ' + err.message);
+            resolve(`Tabla salidas creada con exito`);
+        }
+      );
+  })
+  new Promise((resolve, reject) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS entradas (
+          id TEXT PRIMARY KEY,
+          usuarioId TEXT NOT NULL,
+          horaEntrada INTEGER NOT NULL
+        );`,
+        function (err) {
+            if (err) reject('Error al crear la tabla entradas: ' + err.message);
+            resolve(`Tabla entradas creada con exito`);
+        }
+      );
+  })
 
 
   mainWindow.on('closed', () => {
@@ -56,6 +81,7 @@ function createWindow() {
 app.whenReady().then(async () => {
 
   // Crear la ventana de la aplicación Electron
+  salidasControllers();
   usuariosControllers();
   createWindow();
 

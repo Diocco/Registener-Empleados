@@ -1,0 +1,54 @@
+#root{
+    display: flex;
+    flex-direction: row;
+}
+
+#registro{
+    display: grid;
+    width: 400px;
+    grid-template-columns: 300px 100px;
+    border: 1px solid black;
+}
+
+.controlEmpleados{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 400px;
+    font-size: 20px;
+    border: 1px solid black;
+    margin: 10px;
+}
+
+.controlEmpleados__nombre{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    padding-top: 30px;
+    width: 100%;
+}
+
+.controlEmpleados__boton{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 30px;
+    width: 50%;
+}
+
+.controlEmpleados__hora{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 30px;
+    width: 50%;
+}
+
+.salida{
+    display: flex;
+    flex-direction: row;
+    border: 1px solid black;
+}

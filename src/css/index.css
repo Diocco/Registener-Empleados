@@ -1,13 +1,56 @@
-#root{
-    display: flex;
-    flex-direction: row;
+:root{
+    --fondo: #02000c;
+    --fondoVentana: #141220;
+    --fondoElemento: #323044;
+    --letra: white;
+    --principal: #0526B9;
+    --borderRadius: 15px
 }
 
-#registro{
+#root{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--fondo);
+    color: var(--letra)
+}
+
+#usuarios{
     display: grid;
     width: 400px;
     grid-template-columns: 300px 100px;
-    border: 1px solid black;
+    border: 1px solid white;
+}
+
+#registros{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    background-color: var(--fondoVentana);
+    align-items: center;
+    padding: 10px;
+    border-radius: var(--borderRadius);
+    height: 370px;
+}
+
+#registros__mensaje1{
+    font-size: 25px;
+    color: gray;
+    margin: 25%;
+    text-align: center;
+}
+
+#registro__tablaCustom{
+    /*--Paper-shadow: 0px 2px 1px -1pxrgba(0,0,0,0.2),0px 1px 1px 0pxrgba(0,0,0,0.14),0px 1px 3px 0pxrgba(0,0,0,0.12); */
+    /* --Paper-overlay: linear-gradient(rgba(255, 255, 255, 0.051), rgba(255, 255, 255, 0.051)); */
+    background-color: var(--fondoVentana);
+}
+
+#control{
+    display: flex;
+    flex-direction: row;
 }
 
 .controlEmpleados{
@@ -18,8 +61,9 @@
     flex-wrap: wrap;
     width: 400px;
     font-size: 20px;
-    border: 1px solid black;
+    border-radius: var(--borderRadius);
     margin: 10px;
+    background-color: var(--fondoVentana);
 }
 
 .controlEmpleados__nombre{
@@ -43,14 +87,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 30px;
-    width: 50%;
+    width: 30%;
+    margin-left: 10%;
+    margin-right: 10%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: var(--fondoElemento);
+    border-radius: 30px;
+    margin-top: 15px;
 }
 
 .registro{
     display: flex;
     flex-direction: row;
-    border: 1px solid black;
+    border: 1px solid white;
     width: 500px;
 }
 

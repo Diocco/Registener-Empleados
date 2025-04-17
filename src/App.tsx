@@ -10,7 +10,7 @@ import { obtenerRegistros } from "./services/registros";
 import { Button, Tab, Tabs } from "@mui/material";
 import TablaRegistros from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
-import { actualizarRegistros, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
+import { actualizarRegistros, actualizarRegistrosUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
 import { AppDispatch, RootState } from "./redux/store";
 
 const calcularHorasTrabajadas=(registros: RegistrosI[])=>{
@@ -52,6 +52,8 @@ const Empleado=({empleado}:{empleado:UsuariosI})=>{
 const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
   const [horaSalida,setHoraSalida] = useState<string>("")
   const [horaEntrada,setHoraEntrada] = useState<string>("")
+  const dispatch = useDispatch<AppDispatch>();
+
 
   useEffect(()=>{
     obtenerSalidaHoy({usuarioId:empleado.usuarioId})
@@ -69,11 +71,13 @@ const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
   const salida =(usuarioId: string)=>{
     marcarSalida({usuarioId})
     setHoraSalida(obtenerFechaActual({soloHora:true}))
+    dispatch(actualizarRegistros(usuarioId))
   }
 
   const entrada =(usuarioId: string)=>{
     marcarEntrada({usuarioId})
     setHoraEntrada(obtenerFechaActual({soloHora:true}))
+    dispatch(actualizarRegistros(usuarioId))
   }
 
   return(
@@ -122,14 +126,13 @@ const App: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const empleados = useSelector((state:RootState)=> state.variablesReducer.usuarios);
-  const salidas = useSelector((state:RootState)=> state.variablesReducer.salidas);
   const registrosUsuario = useSelector((state:RootState)=> state.variablesReducer.registrosUsuario.registros);
 
   useEffect(()=>{
     obtenerEmpleados()
     .then((respuesta)=>{
       dispatch(definirUsuarios(respuesta))
-      dispatch(actualizarRegistros(respuesta[0].usuarioId))
+      dispatch(actualizarRegistrosUsuario(respuesta[0].usuarioId))
     })
 
     obtenerSalidas()
@@ -152,7 +155,7 @@ const App: React.FC = () => {
       scrollButtons="auto"
       aria-label="scrollable auto tabs example"
     >
-      {empleados.map((empleado=><Tab onClick={()=>dispatch(actualizarRegistros(empleado.usuarioId))} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
+      {empleados.map((empleado=><Tab onClick={()=>dispatch(actualizarRegistrosUsuario(empleado.usuarioId))} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
     </Tabs>
     <div id="registros__filas">
       {registrosUsuario && <TablaRegistros rows={registrosUsuario} empleados={empleados} />}

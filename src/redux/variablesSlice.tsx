@@ -3,7 +3,7 @@ import { UsuariosI } from "../interfaces/empleados";
 import { SalidasI } from "../interfaces/salidas";
 import { RegistrosI } from "../interfaces/registros";
 import { obtenerRegistros } from "../services/registros";
-import { AppDispatch } from "./store";
+import { AppDispatch, RootState } from "./store";
 
 interface VariablesState {
   // Crea la interface de lo que contiene la variable global
@@ -25,7 +25,17 @@ const initialState: VariablesState = {
   }
 };
 
-export const actualizarRegistros=(usuarioId:string) => async (dispatch: AppDispatch) => {
+export const actualizarRegistros=(usuarioId:string) => async (dispatch: AppDispatch, getState: () => RootState)=> {
+  const usuarioRegistro = getState().variablesReducer.registrosUsuario.usuarioId
+  if(usuarioRegistro===usuarioId){ // Si el usuario pasado como parametro es el mismo que el seleccionado para ver los registros entonces actualiza los mismos
+    obtenerRegistros(usuarioId) // Actualiza los registros
+      .then((respuesta) => {
+        dispatch(definirRegistros(respuesta))
+      })
+    }
+}
+
+export const actualizarRegistrosUsuario=(usuarioId:string) => async (dispatch: AppDispatch) => {
   dispatch(definirRegistrosUsuario({usuarioId})) // Actualiza el usuarioId de los registros
   obtenerRegistros(usuarioId) // Solicita y actualiza los registros
     .then((respuesta) => {

@@ -9,7 +9,9 @@ import { RegistrosI } from "./interfaces/registros";
 import { obtenerRegistros } from "./services/registros";
 import { Button, Tab, Tabs } from "@mui/material";
 import TablaRegistros from "./components/tabla";
-import CustomPaginationActionsTable from "./components/tabla copy";
+import { useDispatch, useSelector } from "react-redux";
+import { actualizarRegistros, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
+import { AppDispatch, RootState } from "./redux/store";
 
 const calcularHorasTrabajadas=(registros: RegistrosI[])=>{
   let horasTrabajadas:number = 0;
@@ -47,7 +49,7 @@ const Empleado=({empleado}:{empleado:UsuariosI})=>{
   </>)
 }
 
-const ControlEmpleados=({empleado,setEsVerRegistros}:{empleado:UsuariosI,setEsVerRegistros: React.Dispatch<React.SetStateAction<string | undefined>>})=>{
+const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
   const [horaSalida,setHoraSalida] = useState<string>("")
   const [horaEntrada,setHoraEntrada] = useState<string>("")
 
@@ -111,42 +113,35 @@ const Registro=({registro,empleados}:{registro:RegistrosI,empleados:UsuariosI[]}
 
 const App: React.FC = () => {
 
-  const [esVerRegistros,setEsVerRegistros ] = useState<string|undefined>(undefined)
-  const [registros,setRegistros] = useState<RegistrosI[]|undefined>(undefined)
-  const [empleados,setEmpleados] =useState<UsuariosI[]|undefined>(undefined)
-  const [salidas,setSalidas] =useState<SalidasI[]|undefined>(undefined)
   const [esVerUsuarios, setEsVerUsuarios ] = useState(false)
 
-  const [tabRegistro,setTabRegistro]=  useState<number>(1000)
+  const [tabRegistro,setTabRegistro]=  useState<number>(0)
   const handleTabRegistro = (event: React.SyntheticEvent, newValue: number) => {
     setTabRegistro(newValue);
   };
 
+  const dispatch = useDispatch<AppDispatch>();
+  const empleados = useSelector((state:RootState)=> state.variablesReducer.usuarios);
+  const salidas = useSelector((state:RootState)=> state.variablesReducer.salidas);
+  const registrosUsuario = useSelector((state:RootState)=> state.variablesReducer.registrosUsuario.registros);
+
   useEffect(()=>{
     obtenerEmpleados()
     .then((respuesta)=>{
-      setEmpleados(respuesta)
-    });
+      dispatch(definirUsuarios(respuesta))
+      dispatch(actualizarRegistros(respuesta[0].usuarioId))
+    })
 
     obtenerSalidas()
     .then((respuesta)=>{
-      setSalidas(respuesta)
+      dispatch(definirSalidas(respuesta))
     })
   },[])
-
-  useEffect(()=>{
-    if(esVerRegistros){
-      obtenerRegistros(esVerRegistros)
-      .then((respuesta)=>{
-        setRegistros(respuesta)
-      })
-    }
-  },[esVerRegistros])
 
 
   return (<>
   <div id="control">
-    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} setEsVerRegistros={setEsVerRegistros} />))}
+    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} />))}
   </div>
   {empleados && <>
     <div id="registros">
@@ -157,11 +152,10 @@ const App: React.FC = () => {
       scrollButtons="auto"
       aria-label="scrollable auto tabs example"
     >
-      {empleados.map((empleado=><Tab onClick={()=>setEsVerRegistros(empleado.usuarioId)} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
+      {empleados.map((empleado=><Tab onClick={()=>dispatch(actualizarRegistros(empleado.usuarioId))} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
     </Tabs>
     <div id="registros__filas">
-      {registros && <TablaRegistros rows={registros} empleados={empleados} />}
-      {!esVerRegistros && <div id="registros__mensaje1">Seleccione un usuario para ver sus registros</div>}
+      {registrosUsuario && <TablaRegistros rows={registrosUsuario} empleados={empleados} />}
     </div>
   </div>
   </>}

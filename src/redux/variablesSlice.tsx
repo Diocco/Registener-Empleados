@@ -4,6 +4,7 @@ import { SalidasI } from "../interfaces/salidas";
 import { RegistrosI } from "../interfaces/registros";
 import { obtenerRegistros } from "../services/registros";
 import { AppDispatch, RootState } from "./store";
+import { obtenerEmpleados, solicitarActualizarUsuario } from "../services/usuarios";
 
 interface VariablesState {
   // Crea la interface de lo que contiene la variable global
@@ -41,6 +42,17 @@ export const actualizarRegistrosUsuario=(usuarioId:string) => async (dispatch: A
     .then((respuesta) => {
       dispatch(definirRegistros(respuesta))
     })
+}
+
+export const actualizarUsuario=({usuario}:{usuario:UsuariosI})=> async (dispatch: AppDispatch) => {
+  solicitarActualizarUsuario({usuario})
+  .then(()=>{
+    actualizarRegistros(usuario.usuarioId) // Actualiza los registros
+    obtenerEmpleados() // Actualiza los usuarios
+    .then((usuarios)=>{
+      dispatch(definirUsuarios(usuarios))
+    })
+  })
 }
 
 const variablesSlice = createSlice({

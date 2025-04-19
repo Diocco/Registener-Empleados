@@ -37,3 +37,8 @@ export const obtenerEntradaHoy =async ({usuarioId}:{usuarioId:string})=>{
     const respuesta = await ipcRenderer.invoke('obtener-entradaHoy',usuarioId) as EntradasI;
     return respuesta
 }
+
+export const solicitarActualizarUsuario =async ({usuario}:{usuario:UsuariosI})=>{
+    const respuesta = await ipcRenderer.invoke('modificar-empleado',usuario) as EntradasI;
+    return respuesta
+}

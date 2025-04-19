@@ -7,11 +7,13 @@ import { marcarEntrada, marcarSalida, obtenerEmpleados, obtenerEntradaHoy, obten
 import { SalidasI } from "./interfaces/salidas";
 import { RegistrosI } from "./interfaces/registros";
 import { obtenerRegistros } from "./services/registros";
-import { Button, Tab, Tabs } from "@mui/material";
+import { Button, Modal, Tab, Tabs, TextField } from "@mui/material";
 import TablaRegistros from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
-import { actualizarRegistros, actualizarRegistrosUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
+import { actualizarRegistros, actualizarRegistrosUsuario, actualizarUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
 import { AppDispatch, RootState } from "./redux/store";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencil } from "@fortawesome/free-solid-svg-icons";
 
 const calcularHorasTrabajadas=(registros: RegistrosI[])=>{
   let horasTrabajadas:number = 0;
@@ -49,7 +51,31 @@ const Empleado=({empleado}:{empleado:UsuariosI})=>{
   </>)
 }
 
-const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
+const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAbrirConfiguracion:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI|undefined>>})=>{
+  
+  const [nombre,setNombre] = useState(esAbrirConfiguracion.nombre)
+  const dispatch = useDispatch<AppDispatch>()
+
+  const confirmarCambios=()=>{
+    const empleadoModificado:UsuariosI = {
+      ...esAbrirConfiguracion,
+      nombre: nombre
+    } 
+    dispatch(actualizarUsuario({usuario:empleadoModificado}))
+    .then(()=>setEsAbrirConfiguracion(undefined))
+  }
+  
+  return(
+        <div className="controlEmpleados__ventanaConfiguracion">
+          <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
+          <Button color="primary" variant={"contained"} className="controlEmpleados__boton" onClick={()=>confirmarCambios()}>Guardar</Button>
+          <Button color="primary" variant={"outlined"} className="controlEmpleados__boton" onClick={()=>setEsAbrirConfiguracion(undefined)}>Cancelar</Button>
+        </div>
+)
+}
+
+const ControlEmpleados=({empleado,setEsAbrirConfiguracion}:{empleado:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI | undefined>>})=>{
+
   const [horaSalida,setHoraSalida] = useState<string>("")
   const [horaEntrada,setHoraEntrada] = useState<string>("")
   const dispatch = useDispatch<AppDispatch>();
@@ -80,14 +106,16 @@ const ControlEmpleados=({empleado}:{empleado:UsuariosI})=>{
     dispatch(actualizarRegistros(usuarioId))
   }
 
-  return(
+
+  return(<>
   <div className="controlEmpleados" id={empleado.usuarioId}>
+    <button className="controlEmpleados__modificar" onClick={()=>setEsAbrirConfiguracion(empleado)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faPencil} /></button>
     <div className="controlEmpleados__nombre">{empleado.nombre}</div>
     <div className="controlEmpleados__boton"><Button color="primary" variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado.usuarioId)}>Entrada</Button></div>
     <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>
     <div className="controlEmpleados__hora"><div>{horaSalida?horaSalida:"-"}</div></div>
-  </div>)
+  </div></>)
 }
 
 const Salida=({salida,empleados}:{salida:SalidasI,empleados:UsuariosI[]})=>{
@@ -117,8 +145,8 @@ const Registro=({registro,empleados}:{registro:RegistrosI,empleados:UsuariosI[]}
 
 const App: React.FC = () => {
 
+  const [esAbrirConfiguracion, setEsAbrirConfiguracion ] = useState<UsuariosI|undefined>(undefined)
   const [esVerUsuarios, setEsVerUsuarios ] = useState(false)
-
   const [tabRegistro,setTabRegistro]=  useState<number>(0)
   const handleTabRegistro = (event: React.SyntheticEvent, newValue: number) => {
     setTabRegistro(newValue);
@@ -144,7 +172,7 @@ const App: React.FC = () => {
 
   return (<>
   <div id="control">
-    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} />))}
+    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} setEsAbrirConfiguracion={setEsAbrirConfiguracion}/>))}
   </div>
   {empleados && <>
     <div id="registros">
@@ -162,7 +190,6 @@ const App: React.FC = () => {
     </div>
   </div>
   </>}
-
   
   <div>
     {esVerUsuarios && <>
@@ -172,6 +199,16 @@ const App: React.FC = () => {
       </div>
     </>}
   </div>
+
+  <Modal
+      open={esAbrirConfiguracion?true:false}
+      onClose={()=>setEsAbrirConfiguracion(undefined)}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+      className="controlEmpleados__modal"
+    >
+      <VentanaConfiguracion esAbrirConfiguracion={esAbrirConfiguracion!} setEsAbrirConfiguracion={setEsAbrirConfiguracion}/>
+    </Modal>
   </>
   );
 };

@@ -46,4 +46,29 @@ export function usuariosControllers() {
             );
         });
     });
+
+    ipcMain.handle('eliminar-empleado', async (_event, usuarioId: string) => {
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run(
+                  `DELETE FROM salidas   WHERE usuarioId = ?;`,
+                  [usuarioId],
+                  (err) => { if (err) return reject(err); }
+                );
+                db.run(
+                  `DELETE FROM entradas  WHERE usuarioId = ?;`,
+                  [usuarioId],
+                  (err) => { if (err) return reject(err); }
+                );
+                db.run(
+                  `DELETE FROM usuarios  WHERE usuarioId = ?;`,
+                  [usuarioId],
+                  function (err) {
+                    if (err) return reject('Error al eliminar el usuario: ' + err.message);
+                    resolve(`Empleado eliminado con éxito`);
+                  }
+                );
+              });
+        });
+    });
 }

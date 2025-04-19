@@ -121,7 +121,7 @@ export default function TablaRegistros({rows,empleados}:{rows:RegistrosI[],emple
           ).map((row) => (
             <TableRow key={row.usuarioId+Math.random().toString()} >
               <TableCell component="th" scope="row" >
-                {empleados.find(empleado => empleado.usuarioId===empleado.usuarioId)?.nombre}
+                {empleados.find(empleado => row.usuarioId===empleado.usuarioId)?.nombre}
               </TableCell>
               <TableCell style={{ width: 160 }} align="right">
                 {row.tipo}

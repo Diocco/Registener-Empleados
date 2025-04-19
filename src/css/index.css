@@ -51,6 +51,24 @@
 #control{
     display: flex;
     flex-direction: row;
+    width: 100vw;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#control__agregarEmpleado{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70px;
+    width: 70px;
+    background-color: var(--fondoVentana);
+    cursor: pointer;
+    border-radius: 300px;
+    color: gray;
+    margin: 50px;
+    font-size: 30px;
 }
 
 .controlEmpleados{
@@ -58,11 +76,12 @@
     justify-content: end;
     flex-direction: row;
     flex-wrap: wrap;
-    width: 400px;
+    width: 300px;
     font-size: 20px;
     border-radius: var(--borderRadius);
     margin: 10px;
     background-color: var(--fondoVentana);
+    padding: 10px;
 }
 
 .controlEmpleados__nombre{
@@ -77,13 +96,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 30px;
+    padding-top: 17px;
     width: 50%;
+}
+
+.controlEmpleados__boton *{
+    width: 70%;
 }
 
 .controlEmpleados__modificar{
     display: flex;
-    margin: 5px;
     height: 30px;
     width: 30px;
     background: var(--fondoElemento);
@@ -139,6 +161,21 @@
 
 .controlEmpleados__ventanaConfiguracion *{
     margin-bottom: 5px !important;
+}
+
+#controlEmpleados__ventanaConfiguracion__eliminar{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+#controlEmpleados__ventanaConfiguracion__eliminar *{
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 1000px;
 }
 
 .registro{

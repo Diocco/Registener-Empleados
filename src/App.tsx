@@ -10,10 +10,10 @@ import { obtenerRegistros } from "./services/registros";
 import { Button, Modal, Tab, Tabs, TextField } from "@mui/material";
 import TablaRegistros from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
-import { actualizarRegistros, actualizarRegistrosUsuario, actualizarUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios } from "./redux/variablesSlice";
+import { actualizarRegistros, actualizarRegistrosUsuario, actualizarUsuario, agregarUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
 import { AppDispatch, RootState } from "./redux/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const calcularHorasTrabajadas=(registros: RegistrosI[])=>{
   let horasTrabajadas:number = 0;
@@ -60,13 +60,26 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
     const empleadoModificado:UsuariosI = {
       ...esAbrirConfiguracion,
       nombre: nombre
-    } 
-    dispatch(actualizarUsuario({usuario:empleadoModificado}))
+    }
+
+    if(empleadoModificado.usuarioId==="-1"){ // Si el empleado no tiene id es porque se esta creando uno nuevo, por lo que al confirmar los cambios lo agrega a la base de datos
+      dispatch(agregarUsuario({usuario:empleadoModificado}))
+      .then(()=>setEsAbrirConfiguracion(undefined))
+    }else{ // Modifica el empleado
+      dispatch(actualizarUsuario({usuario:empleadoModificado}))
+      .then(()=>setEsAbrirConfiguracion(undefined))
+    }
+    
+  }
+
+  const confimarEliminar=()=>{
+    dispatch(eliminarUsuario({usuarioId:esAbrirConfiguracion.usuarioId}))
     .then(()=>setEsAbrirConfiguracion(undefined))
   }
   
   return(
         <div className="controlEmpleados__ventanaConfiguracion">
+          {esAbrirConfiguracion.usuarioId!=="-1" && <div id="controlEmpleados__ventanaConfiguracion__eliminar" onClick={()=>confimarEliminar()}><FontAwesomeIcon icon={faTrash} /></div>}
           <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
           <Button color="primary" variant={"contained"} className="controlEmpleados__boton" onClick={()=>confirmarCambios()}>Guardar</Button>
           <Button color="primary" variant={"outlined"} className="controlEmpleados__boton" onClick={()=>setEsAbrirConfiguracion(undefined)}>Cancelar</Button>
@@ -169,10 +182,21 @@ const App: React.FC = () => {
     })
   },[])
 
+  useEffect(()=>{ // Cada vez que se actualizar los usuarios (modificacion o creacion de los mismos) los tabs del registro se reinician
+    setTabRegistro(0)
+    if(empleados.length>0) dispatch(actualizarRegistrosUsuario(empleados[0].usuarioId))
+  },[empleados])
+
+  const empleadoNuevo: UsuariosI={
+    usuarioId: "-1",
+    nombre: ""
+  }
 
   return (<>
   <div id="control">
     {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} setEsAbrirConfiguracion={setEsAbrirConfiguracion}/>))}
+    <div id="control__agregarEmpleado" onClick={()=>setEsAbrirConfiguracion(empleadoNuevo)} ><FontAwesomeIcon icon={faPlus} /></div>
+
   </div>
   {empleados && <>
     <div id="registros">

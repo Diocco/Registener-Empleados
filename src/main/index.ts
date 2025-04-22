@@ -10,6 +10,7 @@ import { usuariosControllers } from '../controllers/usuariosControllers';
 import { salidasControllers } from '../controllers/salidasControllers';
 import { entradasControllers } from '../controllers/entradasControllers';
 import { registrosControllers } from '../controllers/registrosControllers';
+import { turnosControllers } from '../controllers/turnosControllers';
 
 // Crear la ventana de Electron
 let mainWindow: BrowserWindow | null = null;
@@ -72,6 +73,22 @@ function createWindow() {
       );
   })
 
+  new Promise((resolve, reject) => {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS turnos (
+          id TEXT PRIMARY KEY,
+          usuarioId TEXT NOT NULL,
+          dia INTEGER NOT NULL,
+          minutosEntrada INTEGER NOT NULL,
+		      minutosSalida INTEGER NOT NULL
+        );`,
+      function (err) {
+          if (err) reject('Error al crear la tabla turnos: ' + err.message);
+          resolve(`Tabla turnos creada con exito`);
+      }
+    );
+})
+
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -87,6 +104,7 @@ app.whenReady().then(async () => {
   entradasControllers();
   usuariosControllers();
   registrosControllers();
+  turnosControllers();
   createWindow();
 
   // Si hay otras ventanas abiertas, salir de la aplicación cuando todas se cierren

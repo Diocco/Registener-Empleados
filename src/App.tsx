@@ -14,26 +14,11 @@ import { actualizarRegistros, actualizarRegistrosUsuario, actualizarUsuario, agr
 import { AppDispatch, RootState } from "./redux/store";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-
-const calcularHorasTrabajadas=(registros: RegistrosI[])=>{
-  let horasTrabajadas:number = 0;
-  let ultimaEntrada:number|undefined = undefined;
-  let ultimaSalida:number|undefined = undefined;
-  registros.slice().reverse().forEach(registro=>{
-    if(registro.tipo==="entrada") {
-      ultimaEntrada=registro.hora
-      return
-    }else if(ultimaEntrada){
-      horasTrabajadas += registro.hora-ultimaEntrada
-      ultimaEntrada=undefined
-      ultimaSalida=registro.hora
-    }else if(ultimaSalida){
-      horasTrabajadas += registro.hora - ultimaSalida
-      ultimaSalida = registro.hora
-    }
-  })
-  return Number((horasTrabajadas/(1000*60*60)).toPrecision(2)) // Devuelve el resultado en horas
-}
+import { Turno } from "./components/selectTurno";
+import { TurnosI } from "./interfaces/turnos";
+import { eliminarTurno, modificarTurno, obtenerTurnosPorUsuario, solicitarAgregarTurno } from "./services/turnos";
+import { calcularHorasEsteMes } from "./helpers/calcularHorasDeTrabajoMes";
+import { calcularHorasTrabajadas } from "./helpers/calcularHorasTrabajadas";
 
 const Empleado=({empleado}:{empleado:UsuariosI})=>{
 
@@ -51,10 +36,32 @@ const Empleado=({empleado}:{empleado:UsuariosI})=>{
   </>)
 }
 
+const generarTurno=(usuarioId:string)=>{
+  const idProvisorio = "00000"+(Math.random()*Math.random()).toString() // El id siempre comiensza con "00000" para indicar que es un id provisorio
+  const turnoDefault:TurnosI = {
+    usuarioId,
+    id: idProvisorio,
+    dia: 1,
+    minutosEntrada: 480,
+    minutosSalida: 960
+  }
+  return turnoDefault
+
+}
+
 const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAbrirConfiguracion:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI|undefined>>})=>{
-  
+
+  const [turnos, setTurnos] = useState<TurnosI[]>([])
   const [nombre,setNombre] = useState(esAbrirConfiguracion.nombre)
   const dispatch = useDispatch<AppDispatch>()
+
+  useEffect(()=>{
+    
+    obtenerTurnosPorUsuario({usuarioId:esAbrirConfiguracion.usuarioId}) // Obtiene los turnos del empleado desde la base de datos
+    .then((respuesta)=>{
+      setTurnos(respuesta)
+    })
+  },[])
 
   const confirmarCambios=()=>{
     const empleadoModificado:UsuariosI = {
@@ -70,6 +77,15 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
       .then(()=>setEsAbrirConfiguracion(undefined))
     }
     
+    turnos.forEach((turno)=>{
+      if(turno.id.startsWith("00000")){ // Si el turno es nuevo entonces lo agrega a la base de datos
+        solicitarAgregarTurno({turno})
+      }else if(turno.id.startsWith("-1")){ // Si el turno fue eliminado entonces lo elimina de la bade de datos
+        eliminarTurno({turnoId:turno.id.substring(2)}) // Envia el id sin el "-1"
+      }else{
+        modificarTurno({turno}) // Si el turno ya existia entonces lo actualiza
+      }
+    })
   }
 
   const confimarEliminar=()=>{
@@ -77,10 +93,23 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
     .then(()=>setEsAbrirConfiguracion(undefined))
   }
   
+  const agregarTurno=()=>{
+    const turnoDefault = generarTurno(esAbrirConfiguracion.usuarioId) // Crea un turno por default
+    const turnosModificados:TurnosI[] = [
+      ...turnos,
+      turnoDefault
+    ]
+    setTurnos(turnosModificados) // Lo agrega al final de los turnos existentes
+  }
+
   return(
-        <div className="controlEmpleados__ventanaConfiguracion">
+        <div id="controlEmpleados__ventanaConfiguracion">
           {esAbrirConfiguracion.usuarioId!=="-1" && <div id="controlEmpleados__ventanaConfiguracion__eliminar" onClick={()=>confimarEliminar()}><FontAwesomeIcon icon={faTrash} /></div>}
           <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
+          <div id="controlEmpleados__ventanaConfiguracion__turnos">
+            {turnos.map(turno=><Turno key={turno.id} turno={turno} setTurnos={setTurnos}/> )}
+            <div id="controlEmpleados__ventanaConfiguracion__agregarTurno" onClick={()=>agregarTurno()}><FontAwesomeIcon icon={faPlus} /></div>
+          </div>
           <Button color="primary" variant={"contained"} className="controlEmpleados__boton" onClick={()=>confirmarCambios()}>Guardar</Button>
           <Button color="primary" variant={"outlined"} className="controlEmpleados__boton" onClick={()=>setEsAbrirConfiguracion(undefined)}>Cancelar</Button>
         </div>
@@ -205,7 +234,6 @@ const App: React.FC = () => {
       onChange={handleTabRegistro}
       variant="scrollable"
       scrollButtons="auto"
-      aria-label="scrollable auto tabs example"
     >
       {empleados.map((empleado=><Tab onClick={()=>dispatch(actualizarRegistrosUsuario(empleado.usuarioId))} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
     </Tabs>
@@ -232,9 +260,11 @@ const App: React.FC = () => {
       className="controlEmpleados__modal"
     >
       <VentanaConfiguracion esAbrirConfiguracion={esAbrirConfiguracion!} setEsAbrirConfiguracion={setEsAbrirConfiguracion}/>
-    </Modal>
+  </Modal>
   </>
   );
 };
 
 export default App;
+
+

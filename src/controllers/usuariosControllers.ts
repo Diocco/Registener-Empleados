@@ -61,6 +61,11 @@ export function usuariosControllers() {
                   (err) => { if (err) return reject(err); }
                 );
                 db.run(
+                    `DELETE FROM turnos  WHERE usuarioId = ?;`,
+                    [usuarioId],
+                    (err) => { if (err) return reject(err); }
+                  );
+                db.run(
                   `DELETE FROM usuarios  WHERE usuarioId = ?;`,
                   [usuarioId],
                   function (err) {
@@ -68,6 +73,7 @@ export function usuariosControllers() {
                     resolve(`Empleado eliminado con éxito`);
                   }
                 );
+                
               });
         });
     });

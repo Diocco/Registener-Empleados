@@ -7,34 +7,19 @@ import { marcarEntrada, marcarSalida, obtenerEmpleados, obtenerEntradaHoy, obten
 import { SalidasI } from "./interfaces/salidas";
 import { RegistrosI } from "./interfaces/registros";
 import { obtenerRegistros } from "./services/registros";
-import { Button, Modal, Tab, Tabs, TextField } from "@mui/material";
+import { Button, Fab, Modal, Tab, Tabs, TextField } from "@mui/material";
 import TablaRegistros from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
-import { actualizarRegistros, actualizarRegistrosUsuario, actualizarUsuario, agregarUsuario, definirRegistrosUsuario, definirSalidas, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
-import { AppDispatch, RootState } from "./redux/store";
+import { actualizarRegistros, actualizarTurnos, actualizarUsuario, agregarUsuario, definirRegistros, definirSalidas, definirTurnos, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
+import { AppDispatch, RootState } from './redux/store';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faList, faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Turno } from "./components/selectTurno";
 import { TurnosI } from "./interfaces/turnos";
-import { eliminarTurno, modificarTurno, obtenerTurnosPorUsuario, solicitarAgregarTurno } from "./services/turnos";
+import { eliminarTurno, modificarTurno, obtenerTurnos, obtenerTurnosPorUsuario, solicitarAgregarTurno } from "./services/turnos";
 import { calcularHorasEsteMes } from "./helpers/calcularHorasDeTrabajoMes";
 import { calcularHorasTrabajadas } from "./helpers/calcularHorasTrabajadas";
-
-const Empleado=({empleado}:{empleado:UsuariosI})=>{
-
-  const [horasTrabajadas , setHorasTrabajadas] = useState<number>(0)
-
-  obtenerRegistros(empleado.usuarioId)
-  .then(respuesta=>{
-    setHorasTrabajadas(calcularHorasTrabajadas(respuesta))
-  })
-
-  return(<>
-    <div>{empleado.usuarioId}</div>
-    <div>{empleado.nombre}</div>
-    <div>{`${horasTrabajadas} hs`}</div>
-  </>)
-}
+import { ModalRegistro } from "./components/modalRegistros";
 
 const generarTurno=(usuarioId:string)=>{
   const idProvisorio = "00000"+(Math.random()*Math.random()).toString() // El id siempre comiensza con "00000" para indicar que es un id provisorio
@@ -51,17 +36,11 @@ const generarTurno=(usuarioId:string)=>{
 
 const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAbrirConfiguracion:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI|undefined>>})=>{
 
-  const [turnos, setTurnos] = useState<TurnosI[]>([])
+  const turnosRedux = useSelector((state:RootState)=>state.variablesReducer.turnos.filter(turno=> turno.usuarioId === esAbrirConfiguracion.usuarioId)) // Devuelve solo los turnos que sean del usuario seleccionado
+  const [turnos,setTurnos] = useState<TurnosI[]>(turnosRedux)
   const [nombre,setNombre] = useState(esAbrirConfiguracion.nombre)
   const dispatch = useDispatch<AppDispatch>()
 
-  useEffect(()=>{
-    
-    obtenerTurnosPorUsuario({usuarioId:esAbrirConfiguracion.usuarioId}) // Obtiene los turnos del empleado desde la base de datos
-    .then((respuesta)=>{
-      setTurnos(respuesta)
-    })
-  },[])
 
   const confirmarCambios=()=>{
     const empleadoModificado:UsuariosI = {
@@ -77,15 +56,8 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
       .then(()=>setEsAbrirConfiguracion(undefined))
     }
     
-    turnos.forEach((turno)=>{
-      if(turno.id.startsWith("00000")){ // Si el turno es nuevo entonces lo agrega a la base de datos
-        solicitarAgregarTurno({turno})
-      }else if(turno.id.startsWith("-1")){ // Si el turno fue eliminado entonces lo elimina de la bade de datos
-        eliminarTurno({turnoId:turno.id.substring(2)}) // Envia el id sin el "-1"
-      }else{
-        modificarTurno({turno}) // Si el turno ya existia entonces lo actualiza
-      }
-    })
+    dispatch(actualizarTurnos(turnos))
+    
   }
 
   const confimarEliminar=()=>{
@@ -116,8 +88,10 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
 )
 }
 
-const ControlEmpleados=({empleado,setEsAbrirConfiguracion}:{empleado:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI | undefined>>})=>{
+const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{empleado:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI | undefined>>,setEsVerRegistros: React.Dispatch<React.SetStateAction<string>>})=>{
 
+  const registrosRedux = useSelector((state:RootState)=>state.variablesReducer.registros.filter(registro=> registro.usuarioId === empleado.usuarioId)) // Devuelve solo los registros que sean del usuario seleccionado
+  const turnosRedux = useSelector((state:RootState)=>state.variablesReducer.turnos.filter(turno=> turno.usuarioId === empleado.usuarioId)) // Devuelve solo los turnos que sean del usuario seleccionado
   const [horaSalida,setHoraSalida] = useState<string>("")
   const [horaEntrada,setHoraEntrada] = useState<string>("")
   const dispatch = useDispatch<AppDispatch>();
@@ -148,15 +122,26 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion}:{empleado:UsuariosI,s
     dispatch(actualizarRegistros(usuarioId))
   }
 
+  const horasTrabajadas = calcularHorasTrabajadas(registrosRedux); // Cantidad de horas que el empleado trabajo hasta la hora actual
+  const horasEsperadasTrabajadas = calcularHorasEsteMes(turnosRedux); // La cantidad de horas que se espera que el empleado haya trabajado hasta la hora actual
 
   return(<>
   <div className="controlEmpleados" id={empleado.usuarioId}>
-    <button className="controlEmpleados__modificar" onClick={()=>setEsAbrirConfiguracion(empleado)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faPencil} /></button>
+    <div className="controlEmpleados__opciones"> 
+      <button className="controlEmpleados__opciones__boton" onClick={()=>setEsAbrirConfiguracion(empleado)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faPencil} /></button>
+      <button className="controlEmpleados__opciones__boton" onClick={()=>setEsVerRegistros(empleado.usuarioId)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faList} /></button>
+    </div>
     <div className="controlEmpleados__nombre">{empleado.nombre}</div>
     <div className="controlEmpleados__boton"><Button color="primary" variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado.usuarioId)}>Entrada</Button></div>
     <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>
     <div className="controlEmpleados__hora"><div>{horaSalida?horaSalida:"-"}</div></div>
+    <div className="controlEmpleados__horas">
+      <div>Balance de horas:</div>
+      <div>{`${Math.round((horasTrabajadas-horasEsperadasTrabajadas)*10)/10}hs `}</div>
+    </div>
+
+
   </div></>)
 }
 
@@ -187,33 +172,36 @@ const Registro=({registro,empleados}:{registro:RegistrosI,empleados:UsuariosI[]}
 
 const App: React.FC = () => {
 
+  const [esVerRegistros, setEsVerRegistros ] = useState<string>("")
   const [esAbrirConfiguracion, setEsAbrirConfiguracion ] = useState<UsuariosI|undefined>(undefined)
-  const [esVerUsuarios, setEsVerUsuarios ] = useState(false)
-  const [tabRegistro,setTabRegistro]=  useState<number>(0)
-  const handleTabRegistro = (event: React.SyntheticEvent, newValue: number) => {
-    setTabRegistro(newValue);
-  };
 
   const dispatch = useDispatch<AppDispatch>();
   const empleados = useSelector((state:RootState)=> state.variablesReducer.usuarios);
-  const registrosUsuario = useSelector((state:RootState)=> state.variablesReducer.registrosUsuario.registros);
 
   useEffect(()=>{
     obtenerEmpleados()
     .then((respuesta)=>{
       dispatch(definirUsuarios(respuesta))
-      dispatch(actualizarRegistrosUsuario(respuesta[0].usuarioId))
     })
 
     obtenerSalidas()
     .then((respuesta)=>{
       dispatch(definirSalidas(respuesta))
     })
+
+    obtenerTurnos()
+    .then((respuesta)=>{
+      dispatch(definirTurnos(respuesta))
+    })
+
+    obtenerRegistros()
+    .then((respuesta)=>{
+      dispatch(definirRegistros(respuesta))
+    })
   },[])
 
   useEffect(()=>{ // Cada vez que se actualizar los usuarios (modificacion o creacion de los mismos) los tabs del registro se reinician
-    setTabRegistro(0)
-    if(empleados.length>0) dispatch(actualizarRegistrosUsuario(empleados[0].usuarioId))
+    if(empleados.length>0) dispatch(actualizarRegistros(empleados[0].usuarioId))
   },[empleados])
 
   const empleadoNuevo: UsuariosI={
@@ -223,34 +211,21 @@ const App: React.FC = () => {
 
   return (<>
   <div id="control">
-    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} setEsAbrirConfiguracion={setEsAbrirConfiguracion}/>))}
+    {empleados && empleados.map((empleado=><ControlEmpleados empleado={empleado} setEsAbrirConfiguracion={setEsAbrirConfiguracion} setEsVerRegistros={setEsVerRegistros}/>))}
     <div id="control__agregarEmpleado" onClick={()=>setEsAbrirConfiguracion(empleadoNuevo)} ><FontAwesomeIcon icon={faPlus} /></div>
 
   </div>
-  {empleados && <>
-    <div id="registros">
-    <Tabs
-      value={tabRegistro}
-      onChange={handleTabRegistro}
-      variant="scrollable"
-      scrollButtons="auto"
+
+
+  <Modal
+      open={esVerRegistros?true:false}
+      onClose={()=>setEsVerRegistros("")}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+      className="controlEmpleados__modal"
     >
-      {empleados.map((empleado=><Tab onClick={()=>dispatch(actualizarRegistrosUsuario(empleado.usuarioId))} label={empleado.nombre} key={empleado.usuarioId+"tab"}/>))}
-    </Tabs>
-    <div id="registros__filas">
-      {registrosUsuario && <TablaRegistros rows={registrosUsuario} empleados={empleados} />}
-    </div>
-  </div>
-  </>}
-  
-  <div>
-    {esVerUsuarios && <>
-      <h2>Usuarios</h2>
-      <div id="usuarios">
-        {empleados && empleados.map((empleado=><Empleado empleado={empleado}/>))}
-      </div>
-    </>}
-  </div>
+      <ModalRegistro empleados={empleados} usuarioIdSeleccionado={esVerRegistros} setEsVerRegistros={setEsVerRegistros}/>
+  </Modal>
 
   <Modal
       open={esAbrirConfiguracion?true:false}

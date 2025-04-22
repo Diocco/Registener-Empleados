@@ -5,43 +5,49 @@ import { RegistrosI } from "../interfaces/registros";
 import { obtenerRegistros } from "../services/registros";
 import { AppDispatch, RootState } from "./store";
 import { obtenerEmpleados, solicitarActualizarUsuario, solicitarAgregarUsuario, solicitarEliminarUsuario } from "../services/usuarios";
+import { TurnosI } from "../interfaces/turnos";
+import { eliminarTurno, modificarTurno, solicitarAgregarTurno, obtenerTurnos } from '../services/turnos';
 
 interface VariablesState {
   // Crea la interface de lo que contiene la variable global
   usuarios:UsuariosI[],
   salidas:SalidasI[],
-  registrosUsuario:{
-    usuarioId:string,
-    registros: RegistrosI[]
-  },
+  turnos:TurnosI[],
+  registros: RegistrosI[]
 }
 
 const initialState: VariablesState = {
   // Crea las condiciones iniciales
   usuarios: [],
   salidas: [],
-  registrosUsuario: {
-    usuarioId: "",
-    registros: []
-  }
+  turnos: [],
+  registros: [],
 };
 
 export const actualizarRegistros=(usuarioId:string) => async (dispatch: AppDispatch, getState: () => RootState)=> {
-  const usuarioRegistro = getState().variablesReducer.registrosUsuario.usuarioId
-  if(usuarioRegistro===usuarioId){ // Si el usuario pasado como parametro es el mismo que el seleccionado para ver los registros entonces actualiza los mismos
-    obtenerRegistros(usuarioId) // Actualiza los registros
+    obtenerRegistros() // Actualiza los registros
       .then((respuesta) => {
         dispatch(definirRegistros(respuesta))
       })
-    }
 }
 
-export const actualizarRegistrosUsuario=(usuarioId:string) => async (dispatch: AppDispatch) => {
-  dispatch(definirRegistrosUsuario({usuarioId})) // Actualiza el usuarioId de los registros
-  obtenerRegistros(usuarioId) // Solicita y actualiza los registros
-    .then((respuesta) => {
-      dispatch(definirRegistros(respuesta))
+export const actualizarTurnos=(turnos:TurnosI[]) => async (dispatch: AppDispatch)=> {
+
+    
+    Promise.all(turnos.map((turno)=>{
+      if(turno.id.startsWith("00000")){ // Si el turno es nuevo entonces lo agrega a la base de datos
+        solicitarAgregarTurno({turno})
+      }else if(turno.id.startsWith("-1")){ // Si el turno fue eliminado entonces lo elimina de la bade de datos
+        eliminarTurno({turnoId:turno.id.substring(2)}) // Envia el id sin el "-1"
+      }else{
+        modificarTurno({turno}) // Si el turno ya existia entonces lo actualiza
+      }
+    }))
+    .then(async ()=>{
+      const turnosDb = await obtenerTurnos()
+      dispatch(definirTurnos(turnosDb))
     })
+    
 }
 
 export const actualizarUsuario=({usuario}:{usuario:UsuariosI})=> async (dispatch: AppDispatch) => {
@@ -87,11 +93,11 @@ const variablesSlice = createSlice({
     definirSalidas: (state, action: PayloadAction<SalidasI[]>) => {
       state.salidas = action.payload;
     },
-    definirRegistrosUsuario: (state, action: PayloadAction<{usuarioId:string}>) => {
-      state.registrosUsuario.usuarioId = action.payload.usuarioId; // Obtiene el nuevo usuarioId para buscar los nuevos registros
-    },
     definirRegistros(state, action: PayloadAction<RegistrosI[]>){
-      state.registrosUsuario.registros = action.payload
+      state.registros = action.payload
+    },
+    definirTurnos(state, action: PayloadAction<TurnosI[]>){
+      state.turnos = action.payload
     },
     reiniciarVariables: () => initialState,
   },
@@ -100,9 +106,9 @@ const variablesSlice = createSlice({
 export const {
   definirUsuarios,
   definirSalidas,
-  definirRegistrosUsuario,
   reiniciarVariables,
-  definirRegistros
+  definirRegistros,
+  definirTurnos
 } = variablesSlice.actions; // Se exporta las funciones
 export default variablesSlice.reducer; // Se exporta la configuracion
 

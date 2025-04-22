@@ -19,8 +19,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280, // Resolución de lanzamiento (ancho)
     height: 720, // Resolución de lanzamiento (alto)
-    minWidth: 1024,
-    minHeight: 768,
+    minWidth: 900,
+    minHeight: 500,
     // icon: path.join(__dirname, '../images/icon.ico'), // Ruta del icono
     webPreferences: {
       nodeIntegration: true, // No habilitar la integración de Node.js en el frontend

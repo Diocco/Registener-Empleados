@@ -7,6 +7,13 @@
     --borderRadius: 15px
 }
 
+body{
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
 #root{
     display: flex;
     flex-direction: column;
@@ -14,7 +21,10 @@
     justify-content: center;
     align-items: center;
     background-color: var(--fondo);
-    color: var(--letra)
+    color: var(--letra);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
 #usuarios{
@@ -109,7 +119,15 @@
     width: 70%;
 }
 
-.controlEmpleados__modificar{
+.controlEmpleados__opciones{
+    display: flex;
+    height: 30px;
+    justify-self: end;
+    justify-content: center;
+    align-items: center;
+}
+
+.controlEmpleados__opciones__boton{
     display: flex;
     height: 30px;
     width: 30px;
@@ -120,6 +138,7 @@
     align-items: center;
     border: 0;
     cursor: pointer;
+    margin-left: 10px;
 }   
 
 .controlEmpleados__icon{
@@ -152,6 +171,17 @@
     left: 0;
     justify-content: center;
     align-items: center;
+}
+
+.controlEmpleados__horas{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    padding: 5px;
+    border: 1px solid var(--fondoElemento);
+    border-radius: 5px;
 }
 
 #controlEmpleados__ventanaConfiguracion{

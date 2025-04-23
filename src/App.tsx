@@ -7,8 +7,8 @@ import { marcarEntrada, marcarSalida, obtenerEmpleados, obtenerEntradaHoy, obten
 import { SalidasI } from "./interfaces/salidas";
 import { RegistrosI } from "./interfaces/registros";
 import { obtenerRegistros } from "./services/registros";
-import { Button, Fab, FormControlLabel, Modal, Switch, Tab, Tabs, TextField } from "@mui/material";
-import TablaRegistros from "./components/tabla";
+import { Button, Fab, FormControlLabel, Modal, Switch, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { TablaRegistros } from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
 import { actualizarRegistros, actualizarTurnos, actualizarUsuario, agregarUsuario, definirRegistros, definirSalidas, definirTurnos, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
 import { AppDispatch, RootState } from './redux/store';
@@ -20,76 +20,9 @@ import { eliminarTurno, obtenerTurnos } from "./services/turnos";
 import { calcularHorasEsteMes } from "./helpers/calcularHorasDeTrabajoMes";
 import { calcularHorasTrabajadas } from "./helpers/calcularHorasTrabajadas";
 import { ModalRegistro } from "./components/modalRegistros";
-
-const generarTurno=(usuarioId:string)=>{
-  const idProvisorio = "00000"+(Math.random()*Math.random()).toString() // El id siempre comiensza con "00000" para indicar que es un id provisorio
-  const turnoDefault:TurnosI = {
-    usuarioId,
-    id: idProvisorio,
-    dia: 1,
-    minutosEntrada: 480,
-    minutosSalida: 960
-  }
-  return turnoDefault
-
-}
-
-const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAbrirConfiguracion:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI|undefined>>})=>{
-
-  const turnosRedux = useSelector((state:RootState)=>state.variablesReducer.turnos.filter(turno=> turno.usuarioId === esAbrirConfiguracion.usuarioId)) // Devuelve solo los turnos que sean del usuario seleccionado
-  const [turnos,setTurnos] = useState<TurnosI[]>(turnosRedux)
-  const [nombre,setNombre] = useState(esAbrirConfiguracion.nombre)
-  const dispatch = useDispatch<AppDispatch>()
+import { VentanaConfiguracion } from "./components/modalConfiguracion";
 
 
-  const confirmarCambios=()=>{
-    const empleadoModificado:UsuariosI = {
-      ...esAbrirConfiguracion,
-      nombre: nombre
-    }
-
-    if(empleadoModificado.usuarioId==="-1"){ // Si el empleado no tiene id es porque se esta creando uno nuevo, por lo que al confirmar los cambios lo agrega a la base de datos
-      dispatch(agregarUsuario({usuario:empleadoModificado}))
-      .then(()=>setEsAbrirConfiguracion(undefined))
-    }else{ // Modifica el empleado
-      dispatch(actualizarUsuario({usuario:empleadoModificado}))
-      .then(()=>setEsAbrirConfiguracion(undefined))
-    }
-    
-    dispatch(actualizarTurnos(turnos))
-    
-  }
-
-  const confimarEliminar=()=>{
-    dispatch(eliminarUsuario({usuarioId:esAbrirConfiguracion.usuarioId}))
-    .then(()=>setEsAbrirConfiguracion(undefined))
-  }
-  
-  const agregarTurno=()=>{
-    const turnoDefault = generarTurno(esAbrirConfiguracion.usuarioId) // Crea un turno por default
-    const turnosModificados:TurnosI[] = [
-      ...turnos,
-      turnoDefault
-    ]
-    setTurnos(turnosModificados) // Lo agrega al final de los turnos existentes
-  }
-
-  return(
-        <div id="controlEmpleados__ventanaConfiguracion">
-          {esAbrirConfiguracion.usuarioId!=="-1" && <div id="controlEmpleados__ventanaConfiguracion__eliminar" onClick={()=>confimarEliminar()}><FontAwesomeIcon icon={faTrash} /></div>}
-          <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
-          <FormControlLabel control={<Switch defaultChecked />} label="Control de puntualidad" />
-          <FormControlLabel control={<Switch defaultChecked />} label="Control de horas" />
-
-          <div id="controlEmpleados__ventanaConfiguracion__turnos">
-            {turnos.map(turno=><Turno key={turno.id} turno={turno} setTurnos={setTurnos}/> )}
-            <div id="controlEmpleados__ventanaConfiguracion__agregarTurno" onClick={()=>agregarTurno()}><FontAwesomeIcon icon={faPlus} /></div>
-          </div>
-          <Button color="primary" variant={"contained"} className="controlEmpleados__boton" onClick={()=>confirmarCambios()}>Guardar</Button>
-          <Button color="primary" variant={"outlined"} className="controlEmpleados__boton" onClick={()=>setEsAbrirConfiguracion(undefined)}>Cancelar</Button>
-        </div>
-)
-}
 
 const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{empleado:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI | undefined>>,setEsVerRegistros: React.Dispatch<React.SetStateAction<string>>})=>{
 
@@ -178,7 +111,7 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
       <button className="controlEmpleados__opciones__boton" onClick={()=>setEsAbrirConfiguracion(empleado)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faPencil} /></button>
       <button className="controlEmpleados__opciones__boton" onClick={()=>setEsVerRegistros(empleado.usuarioId)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faList} /></button>
     </div>
-    <div className="controlEmpleados__nombre">{empleado.nombre}</div>
+    <Typography variant="h5" gutterBottom className="controlEmpleados__nombre">{empleado.nombre}</Typography>
     <div className="controlEmpleados__boton"><Button color="primary" disabled={registrosRedux[0]?.tipo==="entrada"?true:false} variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado)}>Entrada</Button></div>
     <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} disabled={registrosRedux[0]?.tipo==="salida"?true:false} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>

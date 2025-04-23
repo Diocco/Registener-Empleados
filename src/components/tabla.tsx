@@ -17,6 +17,8 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import { RegistrosI } from '../interfaces/registros';
 import { UsuariosI } from '../interfaces/empleados';
 import { obtenerFechaActual } from '../helpers/formatearFecha';
+import { TurnosI } from '../interfaces/turnos';
+import { Turno } from './selectTurno';
 
 interface TablePaginationActionsProps {
   count: number;
@@ -84,7 +86,7 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
   );
 }
 
-export default function TablaRegistros({rows,empleados}:{rows:RegistrosI[],empleados:UsuariosI[]}) {
+export const TablaRegistros=({rows,empleados}:{rows:RegistrosI[],empleados:UsuariosI[]}) =>{
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 

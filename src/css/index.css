@@ -4,7 +4,8 @@
     --fondoElemento: #323044;
     --letra: white;
     --principal: #0526B9;
-    --borderRadius: 15px
+    --borderRadius: 15px;
+    --separador: #2a2a2a;
 }
 
 body{
@@ -45,6 +46,31 @@ body{
     border-radius: var(--borderRadius);
     height: 370px;
     
+}
+
+.modalConfirmacion{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    padding: 17px;
+    background-color: var(--fondoVentana);
+    color: var(--letra);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.modalConfirmacion > :last-child{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modalConfirmacion > :last-child > *{
+    margin: 5px;
 }
 
 .css-1fr578y-MuiTabs-scroller{ /* Modifica el ancho del contenedor de tabs*/
@@ -199,71 +225,6 @@ body{
     padding-bottom: 1px;
 }
 
-#controlEmpleados__ventanaConfiguracion{
-    display: flex;
-    flex-direction: column;
-    background-color: var(--fondoVentana);
-    color: white;
-    padding: 20px;
-    border-radius: 20px;
-    align-items: center;
-}
-
-#controlEmpleados__ventanaConfiguracion > :last-child { /* Boton de cancelar */
-    margin-top: 10px;
-}
-
-#controlEmpleados__ventanaConfiguracion__eliminar{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    justify-content: flex-end;
-    width: 100%;
-    cursor: pointer
-}
-
-#controlEmpleados__ventanaConfiguracion__eliminar *{
-    background-color: red;
-    color: white;
-    padding: 5px;
-    border-radius: 1000px;
-}
-
-#controlEmpleados__ventanaConfiguracion__turnos{
-    width: 100%;
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.controlEmpleados__ventanaConfiguracion__turno{
-    width: 100%;
-    margin-top: 15px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-}
-
-.controlEmpleados__ventanaConfiguracion__turno > :nth-child(2){
-    padding-right: 10px;
-    padding-left: 10px;
-}
-
-#controlEmpleados__ventanaConfiguracion__agregarTurno, .controlEmpleados__ventanaConfiguracion__turno__borrar{
-    font-size: 20px;
-    background-color: var(--fondoElemento);
-    height: 30px;
-    width: 30px;
-    display: flex;
-    align-items: center;
-    border-radius: 1000px;
-    justify-content: center;
-    cursor: pointer;
-    margin: 10px
-}
 
 .registro{
     display: flex;

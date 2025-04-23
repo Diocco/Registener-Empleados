@@ -37,7 +37,7 @@ export const actualizarTurnos=(turnos:TurnosI[]) => async (dispatch: AppDispatch
     Promise.all(turnos.map((turno)=>{
       if(turno.id.startsWith("00000")){ // Si el turno es nuevo entonces lo agrega a la base de datos
         solicitarAgregarTurno({turno})
-      }else if(turno.id.startsWith("-1")){ // Si el turno fue eliminado entonces lo elimina de la bade de datos
+      }else if(turno.id.startsWith("-1")){ // Si el turno fue eliminado entonces lo elimina de la base de datos
         eliminarTurno({turnoId:turno.id.substring(2)}) // Envia el id sin el "-1"
       }else{
         modificarTurno({turno}) // Si el turno ya existia entonces lo actualiza

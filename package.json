@@ -4,6 +4,7 @@
   "main": "src/index.js",
   "scripts": {
     "startdev": "npm run build && electron ./src/main/index.js ",
+    "start": "electron ./src/main/index.js ",
     "dev": "webpack serve --config webpack.config.cjs --mode development",
     "dist": "tsc && electron-builder",
     "build": "tsc && webpack"
@@ -49,6 +50,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.2.5",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",

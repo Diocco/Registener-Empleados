@@ -1,0 +1,82 @@
+
+#ventanaConfiguracion{
+    display: flex;
+    flex-direction: column;
+    background-color: var(--fondoVentana);
+    color: white;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+#ventanaConfiguracion__eliminar{
+    display: flex;
+    width: 150px;
+    align-self: center;
+}
+
+#ventanaConfiguracion__tablaTurnos{
+    border-top: 1px solid var(--separador);
+    border-bottom: 1px solid var(--separador);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.ventanaConfiguracion__h5{
+    padding: 10px 0 0px 10px;
+}
+
+.ventanaConfiguracion__switch{
+    margin: 5px;
+}
+
+#ventanaConfiguracion__turnos{
+    width: 100%;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.ventanaConfiguracion__turnos-div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ventanaConfiguracion__turnos-div > :last-child{
+    position: absolute;
+    font-size: 20px;
+    background-color: var(--fondoElemento);
+    height: 30px;
+    width: 30px;
+    display: flex;
+    align-items: center;
+    border-radius: 1000px;
+    justify-content: center;
+    cursor: pointer;
+    transform: translateX(200px);
+}
+.ventanaConfiguracion__turno{
+    width: 100%;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.ventanaConfiguracion__turno > :nth-child(2){
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+#ventanaConfiguracion__guardarCancelar{
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+#ventanaConfiguracion__guardarCancelar *{
+    margin: 5px;
+}

@@ -13,7 +13,7 @@ function formatTime(value: number) {
     .padStart(2, '0')}`;
 }
 
-export default function SliderHora({minutosSeleccionados,setMinutosSeleccionados}:{minutosSeleccionados:number[],setMinutosSeleccionados: React.Dispatch<React.SetStateAction<number[]>>}) {
+export default function SliderHora({minutosSeleccionados,setMinutosSeleccionados,disabled}:{minutosSeleccionados:number[],setMinutosSeleccionados: (minutos: number[]) => void,disabled:boolean}) {
   // Estado inicial: de 08:00 (480) a 18:00 (1080)
 
   const handleChange = (
@@ -43,6 +43,7 @@ export default function SliderHora({minutosSeleccionados,setMinutosSeleccionados
         getAriaLabel={() => 'Rango de horas'}
         getAriaValueText={(v) => formatTime(v)}
         disableSwap
+        disabled={disabled}
       />
     </Box>
   );

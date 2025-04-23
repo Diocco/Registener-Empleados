@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { UsuariosI } from "../interfaces/empleados"
 import { Tab, Tabs } from "@mui/material"
-import TablaRegistros from "./tabla"
+import {TablaRegistros} from "./tabla"
 import { useSelector } from "react-redux"
 import { RootState } from "../redux/store"
 

@@ -54,6 +54,8 @@ export const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion
     const [turnos,setTurnos] = useState<TurnosI[]>(turnosRedux)
     const [turnosVisibles, setTurnosVisibles] = useState<TurnosI[]>(()=>turnosPorDia(turnos,tabTurnos))
     const [nombre,setNombre] = useState(esAbrirConfiguracion.nombre)
+    const [esControlPuntualidad, setEsControlPuntualidad] = useState(esAbrirConfiguracion.esControlPuntualidad===1)
+    const [esControlHoras, setEsControlHoras] = useState(esAbrirConfiguracion.esControlHoras===1)
     const handleTabTurnos = (event: React.SyntheticEvent, newValue: number) => {
         setTabTurnos(newValue);
     };
@@ -69,6 +71,8 @@ export const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion
     const confirmarCambios=()=>{
       const empleadoModificado:UsuariosI = {
         ...esAbrirConfiguracion,
+        esControlPuntualidad:esControlPuntualidad?1:0,
+        esControlHoras:esControlHoras?1:0,
         nombre: nombre
       }
   
@@ -93,27 +97,27 @@ export const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion
     return(
           <div id="ventanaConfiguracion">
             <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
-            <FormControlLabel control={<Switch defaultChecked />} className="ventanaConfiguracion__switch" label="Control de puntualidad" />
-            <FormControlLabel control={<Switch defaultChecked />} className="ventanaConfiguracion__switch" label="Control de horas" />
-  
+            <FormControlLabel control={<Switch checked={esControlPuntualidad} onChange={(e)=>setEsControlPuntualidad(e.target.checked)} />} className="ventanaConfiguracion__switch" label="Control de puntualidad" />
+            <FormControlLabel control={<Switch checked={esControlHoras} onChange={(e)=>setEsControlHoras(e.target.checked)} />} className="ventanaConfiguracion__switch" label="Control de horas" />
+            
             <div id="ventanaConfiguracion__tablaTurnos">
-                <Typography variant="h5" className="ventanaConfiguracion__h5">
-                    Turnos
-                </Typography>
-                <Tabs
-                value={tabTurnos}
-                onChange={handleTabTurnos}
-                variant="scrollable"
-                scrollButtons="auto"
-                >
-                    {diasDeSemana.map((dia=><Tab onClick={()=>setTabTurnos(dia.valor)} label={dia.nombre} key={dia.nombre+"tab"}/>))}
-                </Tabs>
-                <div id="ventanaConfiguracion__turnos">
-                    <Turno turno={turnosVisibles[0]} usuarioId={esAbrirConfiguracion.usuarioId} setTurnos={setTurnos}/>
-                    <Turno turno={turnosVisibles[1]} usuarioId={esAbrirConfiguracion.usuarioId} setTurnos={setTurnos}/>
-                </div>
+              <Typography variant="h5" className="ventanaConfiguracion__h5">
+                  Turnos
+              </Typography>
+              <Tabs
+              value={tabTurnos}
+              onChange={handleTabTurnos}
+              variant="scrollable"
+              scrollButtons="auto"
+              >
+                  {diasDeSemana.map((dia=><Tab onClick={()=>setTabTurnos(dia.valor)} label={dia.nombre} key={dia.nombre+"tab"}/>))}
+              </Tabs>
+              <div id="ventanaConfiguracion__turnos">
+                  <Turno turno={turnosVisibles[0]} usuarioId={esAbrirConfiguracion.usuarioId} setTurnos={setTurnos}/>
+                  <Turno turno={turnosVisibles[1]} usuarioId={esAbrirConfiguracion.usuarioId} setTurnos={setTurnos}/>
+              </div>
             </div>
-
+            
             {esAbrirConfiguracion.usuarioId!=="-1" &&<Button color="error" variant={"outlined"} id="ventanaConfiguracion__eliminar" onClick={()=>setAbrirConfirmacion(true)}>Eliminar</Button>}
 
             <div id="ventanaConfiguracion__guardarCancelar">

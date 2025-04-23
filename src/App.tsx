@@ -116,18 +116,18 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
     <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} disabled={registrosRedux[0]?.tipo==="salida"?true:false} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>
     <div className="controlEmpleados__hora"><div>{horaSalida?horaSalida:"-"}</div></div>
-    <div className="controlEmpleados__estadisticas">
+    {empleado.esControlHoras===1 && <div className="controlEmpleados__estadisticas">
       <div>Balance de horas:</div>
       <div>{`${Math.round((horasTrabajadas-horasEsperadasTrabajadas)*10)/10}hs `}</div>
-    </div>
-    <div className="controlEmpleados__estadisticas">
+    </div>}
+    {empleado.esControlPuntualidad===1 &&<div className="controlEmpleados__estadisticas">
       <div>Puntualidad:</div>
       <div className="controlEmpleados__estadisticas__puntosPuntualidad">
         <div>{`${Math.round((empleado.puntosPuntualidad)*100)/100}`}</div>
         <div>/10</div>
       </div>
 
-    </div>
+    </div>}
 
 
   </div></>)
@@ -171,7 +171,9 @@ const App: React.FC = () => {
     usuarioId: "-1",
     nombre: "",
     diasRacha: 0,
-    puntosPuntualidad: 5
+    puntosPuntualidad: 5,
+    esControlPuntualidad: 1,
+    esControlHoras: 1
   }
 
   return (<>

@@ -21,13 +21,16 @@ export function usuariosControllers() {
     });
 
     ipcMain.handle('modificar-empleado', async (_event, empleado: UsuariosI) => {
+          
+        
         return new Promise((resolve, reject) => {
             db.run(
                 `UPDATE usuarios
-                SET nombre = ?, diasRacha = ?, puntosPuntualidad = ?
+                SET nombre = ?, diasRacha = ?, puntosPuntualidad = ?, esControlHoras = ?, esControlPuntualidad = ?
                 WHERE usuarioId= ?`,
-                [empleado.nombre,empleado.diasRacha,empleado.puntosPuntualidad,empleado.usuarioId],
+                [empleado.nombre,empleado.diasRacha,empleado.puntosPuntualidad,empleado.esControlHoras,empleado.esControlPuntualidad,empleado.usuarioId],
                 function (err) {
+                    console.log("SE solicito modificar el usuario" , empleado, err)
                     if (err) reject('Error al modificar el usuario: ' + err.message);
                     resolve(`Usuario modificado con ID: ${empleado.usuarioId}`);
                 }

@@ -41,6 +41,8 @@ function createWindow() {
           nombre TEXT NOT NULL,
           puntosPuntualidad FLOAT NOT NULL,
           diasRacha INTEGER NOT NULL
+          esControlHoras INTEGER NOT NULL
+          esControlPuntualidad INTEGER NOT NULL
         );`,
         function (err) {
             if (err) reject('Error al crear la tabla usuarios: ' + err.message);

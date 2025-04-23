@@ -3,4 +3,6 @@ export interface UsuariosI{
     nombre:string,
     puntosPuntualidad:number,
     diasRacha:number,
+    esControlPuntualidad:number,
+    esControlHoras:number,
 }

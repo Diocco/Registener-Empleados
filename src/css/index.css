@@ -22,9 +22,10 @@ body{
     align-items: center;
     background-color: var(--fondo);
     color: var(--letra);
-    height: 100vh;
-    width: 100vw;
+    height: calc(100% - 100px);
+    width: calc(100% - 100px);
     overflow: hidden;
+    padding: 50px;
 }
 
 #usuarios{
@@ -50,11 +51,14 @@ body{
     width: 450px;
 }
 
-#registros__mensaje1{
-    font-size: 25px;
+#registro__mensajeVacio{
+    display: flex;
+    height: 100%;
+    width: 100%;
     color: gray;
-    margin: 25%;
-    text-align: center;
+    font-size: 40px;
+    align-items: center;
+    justify-content: center;
 }
 
 #registro__tablaCustom{
@@ -173,7 +177,7 @@ body{
     align-items: center;
 }
 
-.controlEmpleados__horas{
+.controlEmpleados__estadisticas{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -182,6 +186,17 @@ body{
     padding: 5px;
     border: 1px solid var(--fondoElemento);
     border-radius: 5px;
+}
+
+.controlEmpleados__estadisticas__puntosPuntualidad{
+    display: flex;
+    align-items: flex-end;
+}
+
+.controlEmpleados__estadisticas__puntosPuntualidad > :last-child{
+    font-size: 15px;
+    color: gray;
+    padding-bottom: 1px;
 }
 
 #controlEmpleados__ventanaConfiguracion{

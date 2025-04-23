@@ -38,7 +38,9 @@ function createWindow() {
       db.run(`
         CREATE TABLE IF NOT EXISTS usuarios (
           usuarioId TEXT PRIMARY KEY,
-          nombre TEXT NOT NULL
+          nombre TEXT NOT NULL,
+          puntosPuntualidad FLOAT NOT NULL,
+          diasRacha INTEGER NOT NULL
         );`,
         function (err) {
             if (err) reject('Error al crear la tabla usuarios: ' + err.message);

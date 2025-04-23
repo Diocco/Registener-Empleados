@@ -111,55 +111,58 @@ export default function TablaRegistros({rows,empleados}:{rows:RegistrosI[],emple
     setPage(0);
   };
 
-  return (
-    <TableContainer component={Paper} id="registro__tablaCustom" > 
-      <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
-        <TableBody >
-          {(rowsPerPage > 0
-            ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            : rows
-          ).map((row) => (
-            <TableRow key={row.usuarioId+Math.random().toString()} >
-              <TableCell component="th" scope="row" >
-                {empleados.find(empleado => row.usuarioId===empleado.usuarioId)?.nombre}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align="right">
-                {row.tipo}
-              </TableCell>
-              <TableCell style={{ width: 160 }} align="right">
-              {obtenerFechaActual({fecha:new Date(row.hora)})}
-              </TableCell>
-            </TableRow>
-          ))}
-          {emptyRows > 0 && (
-            <TableRow style={{ height: 53 * emptyRows }}>
-              <TableCell colSpan={6} />
-            </TableRow>
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
-              colSpan={3}
-              count={rows.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              slotProps={{
-                select: {
-                  inputProps: {
-                    'aria-label': 'rows per page',
+  return (<>
+    {rows.length>0?
+      <TableContainer component={Paper} id="registro__tablaCustom" > 
+        <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
+          <TableBody >
+            {(rowsPerPage > 0
+              ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              : rows
+            ).map((row) => (
+              <TableRow key={row.usuarioId+Math.random().toString()} >
+                <TableCell component="th" scope="row" >
+                  {empleados.find(empleado => row.usuarioId===empleado.usuarioId)?.nombre}
+                </TableCell>
+                <TableCell style={{ width: 160 }} align="right">
+                  {row.tipo}
+                </TableCell>
+                <TableCell style={{ width: 160 }} align="right">
+                {obtenerFechaActual({fecha:new Date(row.hora)})}
+                </TableCell>
+              </TableRow>
+            ))}
+            {emptyRows > 0 && (
+              <TableRow style={{ height: 53 * emptyRows }}>
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                colSpan={3}
+                count={rows.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                slotProps={{
+                  select: {
+                    inputProps: {
+                      'aria-label': 'rows per page',
+                    },
+                    native: true,
                   },
-                  native: true,
-                },
-              }}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              ActionsComponent={TablePaginationActions}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
-    </TableContainer>
-  );
+                }}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                ActionsComponent={TablePaginationActions}
+              />
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </TableContainer>
+      :
+      <div id="registro__mensajeVacio" >Sin registros</div>
+    }</>);
 }

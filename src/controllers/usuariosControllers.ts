@@ -24,9 +24,9 @@ export function usuariosControllers() {
         return new Promise((resolve, reject) => {
             db.run(
                 `UPDATE usuarios
-                SET nombre = ?
+                SET nombre = ?, diasRacha = ?, puntosPuntualidad = ?
                 WHERE usuarioId= ?`,
-                [empleado.nombre,empleado.usuarioId],
+                [empleado.nombre,empleado.diasRacha,empleado.puntosPuntualidad,empleado.usuarioId],
                 function (err) {
                     if (err) reject('Error al modificar el usuario: ' + err.message);
                     resolve(`Usuario modificado con ID: ${empleado.usuarioId}`);

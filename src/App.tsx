@@ -7,7 +7,7 @@ import { marcarEntrada, marcarSalida, obtenerEmpleados, obtenerEntradaHoy, obten
 import { SalidasI } from "./interfaces/salidas";
 import { RegistrosI } from "./interfaces/registros";
 import { obtenerRegistros } from "./services/registros";
-import { Button, Fab, Modal, Tab, Tabs, TextField } from "@mui/material";
+import { Button, Fab, FormControlLabel, Modal, Switch, Tab, Tabs, TextField } from "@mui/material";
 import TablaRegistros from "./components/tabla";
 import { useDispatch, useSelector } from "react-redux";
 import { actualizarRegistros, actualizarTurnos, actualizarUsuario, agregarUsuario, definirRegistros, definirSalidas, definirTurnos, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
@@ -16,7 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Turno } from "./components/selectTurno";
 import { TurnosI } from "./interfaces/turnos";
-import { eliminarTurno, modificarTurno, obtenerTurnos, obtenerTurnosPorUsuario, solicitarAgregarTurno } from "./services/turnos";
+import { eliminarTurno, obtenerTurnos } from "./services/turnos";
 import { calcularHorasEsteMes } from "./helpers/calcularHorasDeTrabajoMes";
 import { calcularHorasTrabajadas } from "./helpers/calcularHorasTrabajadas";
 import { ModalRegistro } from "./components/modalRegistros";
@@ -78,6 +78,9 @@ const VentanaConfiguracion=({esAbrirConfiguracion,setEsAbrirConfiguracion}:{esAb
         <div id="controlEmpleados__ventanaConfiguracion">
           {esAbrirConfiguracion.usuarioId!=="-1" && <div id="controlEmpleados__ventanaConfiguracion__eliminar" onClick={()=>confimarEliminar()}><FontAwesomeIcon icon={faTrash} /></div>}
           <TextField id="filled-basic" label="Nombre" variant="filled" defaultValue={nombre} onChange={(s)=>setNombre(s.target.value)}/>
+          <FormControlLabel control={<Switch defaultChecked />} label="Control de puntualidad" />
+          <FormControlLabel control={<Switch defaultChecked />} label="Control de horas" />
+
           <div id="controlEmpleados__ventanaConfiguracion__turnos">
             {turnos.map(turno=><Turno key={turno.id} turno={turno} setTurnos={setTurnos}/> )}
             <div id="controlEmpleados__ventanaConfiguracion__agregarTurno" onClick={()=>agregarTurno()}><FontAwesomeIcon icon={faPlus} /></div>
@@ -116,10 +119,54 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
     dispatch(actualizarRegistros(usuarioId))
   }
 
-  const entrada =(usuarioId: string)=>{
-    marcarEntrada({usuarioId})
+  const entrada =(usuarioOriginal: UsuariosI)=>{
+
+    // Copia el usuario para poder modificarlo
+    const usuario:UsuariosI = {
+      ...usuarioOriginal
+    }
+
+    // Marca la entrada del usuario
+    marcarEntrada({usuarioId:usuario.usuarioId})
     setHoraEntrada(obtenerFechaActual({soloHora:true}))
-    dispatch(actualizarRegistros(usuarioId))
+
+    // Calcula el cambio en la puntualidad
+    const ahora = new Date();
+    const minutosEntrada = ahora.getHours() * 60 + ahora.getMinutes();
+    const diaSemanaHoy = ahora.getDay() // Obtiene el dia de la semana actual
+    const turnosUsuario = turnosRedux.filter(turno=>(turno.usuarioId===usuario.usuarioId)&&(turno.dia===diaSemanaHoy)) // Filtra los turnos por usuario y por el dia del turno
+    
+    let diferencia = 0 // Almacena la diferencia en minutos entre la hora esperada y la hora observada
+
+    if(turnosUsuario.length>0){ // Si el usuario no tiene turnos no hace nada
+      if(turnosUsuario.length===1){ // Si el usuario tiene un turno
+        const turno = turnosUsuario[0]
+        diferencia = turno.minutosEntrada-minutosEntrada
+      }else if(turnosUsuario.length>1){ // Si el usuario tiene mas de un turno ese mismo dia
+        const diferencias = turnosUsuario.map(turno=> turno.minutosEntrada-minutosEntrada) // Calcula todas las diferencias de todos los turnos
+        diferencia = diferencias.reduce((min, actual) => { // Se queda con la diferencia la cual el modulo es la mas reducida
+          return Math.abs(actual) < Math.abs(min) ? actual : min;
+        });
+      }
+      
+      if(Math.abs(diferencia)>60){ // Si el modulo de la diferencia es mayor a una hora entonces se lo contempla como un caso extraordinario y no se calcula la puntualidad
+
+      }else if(diferencia>=0){ // Si la diferencia es positiva, es decir, que el empleado llego mas temprano entonces aplica una formula
+        if(diferencia>10) diferencia=10 // Si la diferencia es mayor a 10 entonces la limita a 10
+        if(diferencia>5) diferencia=(diferencia-5)/2+5 // Si la diferencia es mayor a 5 entonces el valor restante luego del 5 se divide a la mitad, EJ: Si la diferencia es 9 el resultado es ((9-5)/2)+5 = 7
+        usuario.puntosPuntualidad+=diferencia/29
+        usuario.diasRacha+=1
+      }else{ // Si la diferencia no es positiva, entonces quiere decir que el empleado llego tarde
+        if(diferencia<-30) diferencia=-30 // Si el retraso es mayor que 30 minutos entonces para el calculo lo limita a -30
+        if(diferencia<-15) diferencia=(diferencia+15)/2-15 // Si el retraso es mayor que 15 minutos entonces el valor restante luego del 15 se lo divide a la mitad
+        usuario.puntosPuntualidad+=2*diferencia/29
+        usuario.diasRacha=0
+      }
+    }
+
+    // Actualiza el usuario y los registros
+    dispatch(actualizarUsuario({usuario}))
+
   }
 
   const horasTrabajadas = calcularHorasTrabajadas(registrosRedux); // Cantidad de horas que el empleado trabajo hasta la hora actual
@@ -132,42 +179,25 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
       <button className="controlEmpleados__opciones__boton" onClick={()=>setEsVerRegistros(empleado.usuarioId)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faList} /></button>
     </div>
     <div className="controlEmpleados__nombre">{empleado.nombre}</div>
-    <div className="controlEmpleados__boton"><Button color="primary" variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado.usuarioId)}>Entrada</Button></div>
-    <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
+    <div className="controlEmpleados__boton"><Button color="primary" disabled={registrosRedux[0]?.tipo==="entrada"?true:false} variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado)}>Entrada</Button></div>
+    <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} disabled={registrosRedux[0]?.tipo==="salida"?true:false} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>
     <div className="controlEmpleados__hora"><div>{horaSalida?horaSalida:"-"}</div></div>
-    <div className="controlEmpleados__horas">
+    <div className="controlEmpleados__estadisticas">
       <div>Balance de horas:</div>
       <div>{`${Math.round((horasTrabajadas-horasEsperadasTrabajadas)*10)/10}hs `}</div>
+    </div>
+    <div className="controlEmpleados__estadisticas">
+      <div>Puntualidad:</div>
+      <div className="controlEmpleados__estadisticas__puntosPuntualidad">
+        <div>{`${Math.round((empleado.puntosPuntualidad)*100)/100}`}</div>
+        <div>/10</div>
+      </div>
+
     </div>
 
 
   </div></>)
-}
-
-const Salida=({salida,empleados}:{salida:SalidasI,empleados:UsuariosI[]})=>{
-  
-  const empleado = empleados.find(empleado => empleado.usuarioId === salida.usuarioId)
-
-  return(
-    <div className="salida">
-      <div>{empleado ? empleado.nombre : "Desconocido"}</div>
-      <div>{obtenerFechaActual({fecha:new Date(salida.horaSalida)})}</div>
-    </div>
-  )
-}
-
-const Registro=({registro,empleados}:{registro:RegistrosI,empleados:UsuariosI[]})=>{
-  
-  const empleado = empleados.find(empleado => empleado.usuarioId === registro.usuarioId)
-
-  return(
-    <div className="registro">
-      <div className="registro__nombre">{empleado ? empleado.nombre : "Desconocido"}</div>
-      <div className="registro__tipo">{registro.tipo}</div>
-      <div className="registro__fecha">{obtenerFechaActual({fecha:new Date(registro.hora)})}</div>
-    </div>
-  )
 }
 
 const App: React.FC = () => {
@@ -206,7 +236,9 @@ const App: React.FC = () => {
 
   const empleadoNuevo: UsuariosI={
     usuarioId: "-1",
-    nombre: ""
+    nombre: "",
+    diasRacha: 0,
+    puntosPuntualidad: 5
   }
 
   return (<>

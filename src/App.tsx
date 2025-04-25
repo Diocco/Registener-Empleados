@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ipcRenderer } from "electron"
 import { UsuariosI } from "./interfaces/empleados";
 import "./css/index.css"
@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { actualizarRegistros, actualizarTurnos, actualizarUsuario, agregarUsuario, definirRegistros, definirSalidas, definirTurnos, definirUsuarios, eliminarUsuario } from "./redux/variablesSlice";
 import { AppDispatch, RootState } from './redux/store';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faList, faPencil, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faList, faPencil, faPlus, faTrash, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Turno } from "./components/selectTurno";
 import { TurnosI } from "./interfaces/turnos";
 import { eliminarTurno, obtenerTurnos } from "./services/turnos";
@@ -21,17 +21,33 @@ import { calcularHorasEsteMes } from "./helpers/calcularHorasDeTrabajoMes";
 import { calcularHorasTrabajadas } from "./helpers/calcularHorasTrabajadas";
 import { ModalRegistro } from "./components/modalRegistros";
 import { VentanaConfiguracion } from "./components/modalConfiguracion";
+import ModalErrorEntrada from "./components/modalErrorEntrada";
 
 
 
 const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{empleado:UsuariosI,setEsAbrirConfiguracion: React.Dispatch<React.SetStateAction<UsuariosI | undefined>>,setEsVerRegistros: React.Dispatch<React.SetStateAction<string>>})=>{
 
-  const registrosRedux = useSelector((state:RootState)=>state.variablesReducer.registros.filter(registro=> registro.usuarioId === empleado.usuarioId)) // Devuelve solo los registros que sean del usuario seleccionado
-  const turnosRedux = useSelector((state:RootState)=>state.variablesReducer.turnos.filter(turno=> turno.usuarioId === empleado.usuarioId)) // Devuelve solo los turnos que sean del usuario seleccionado
+  const registrosRedux = useSelector((state: RootState) => state.variablesReducer.registros);
+  const registros = useMemo(() => registrosRedux.filter((registro) => registro.usuarioId === empleado.usuarioId),
+    [registrosRedux]
+  );
+
+  const turnosRedux = useSelector((state:RootState)=>state.variablesReducer.turnos) // Devuelve solo los turnos que sean del usuario seleccionado
+  const turnos = useMemo(() => turnosRedux.filter(turno=> turno.usuarioId === empleado.usuarioId),
+  [turnosRedux]
+  );
+  
+  const [esModalError,setEsModalError] =useState(false)
   const [horaSalida,setHoraSalida] = useState<string>("")
   const [horaEntrada,setHoraEntrada] = useState<string>("")
   const dispatch = useDispatch<AppDispatch>();
+  const [errorSalidaDiaAnterior,setErrorSalidaDiaAnterior] = useState(false)
 
+
+
+  useEffect(()=>{
+    setErrorSalidaDiaAnterior(horaEntrada===""&&registros[0]?.tipo==="entrada");
+  },[registros])
 
   useEffect(()=>{
     obtenerSalidaHoy({usuarioId:empleado.usuarioId})
@@ -46,9 +62,9 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
 
   },[])
 
-  const salida =(usuarioId: string)=>{
-    marcarSalida({usuarioId})
-    setHoraSalida(obtenerFechaActual({soloHora:true}))
+  const salida =(usuarioId: string,hora?:Date)=>{
+    marcarSalida({usuarioId,hora})
+    if(!hora) setHoraSalida(obtenerFechaActual({soloHora:true}))
     dispatch(actualizarRegistros(usuarioId))
   }
 
@@ -67,7 +83,7 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
     const ahora = new Date();
     const minutosEntrada = ahora.getHours() * 60 + ahora.getMinutes();
     const diaSemanaHoy = ahora.getDay() // Obtiene el dia de la semana actual
-    const turnosUsuario = turnosRedux.filter(turno=>(turno.usuarioId===usuario.usuarioId)&&(turno.dia===diaSemanaHoy)) // Filtra los turnos por usuario y por el dia del turno
+    const turnosUsuario = turnos.filter(turno=>(turno.usuarioId===usuario.usuarioId)&&(turno.dia===diaSemanaHoy)) // Filtra los turnos por usuario y por el dia del turno
     
     let diferencia = 0 // Almacena la diferencia en minutos entre la hora esperada y la hora observada
 
@@ -102,18 +118,19 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
 
   }
 
-  const horasTrabajadas = calcularHorasTrabajadas(registrosRedux); // Cantidad de horas que el empleado trabajo hasta la hora actual
-  const horasEsperadasTrabajadas = calcularHorasEsteMes(turnosRedux); // La cantidad de horas que se espera que el empleado haya trabajado hasta la hora actual
+  const horasTrabajadas = calcularHorasTrabajadas(registros); // Cantidad de horas que el empleado trabajo hasta la hora actual
+  const horasEsperadasTrabajadas = calcularHorasEsteMes(turnos); // La cantidad de horas que se espera que el empleado haya trabajado hasta la hora actual
 
   return(<>
   <div className="controlEmpleados" id={empleado.usuarioId}>
     <div className="controlEmpleados__opciones"> 
+      {errorSalidaDiaAnterior &&<div className="controlEmpleados__opciones__boton" onClick={()=>setEsModalError(true)}><FontAwesomeIcon icon={faTriangleExclamation} /></div>}
       <button className="controlEmpleados__opciones__boton" onClick={()=>setEsAbrirConfiguracion(empleado)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faPencil} /></button>
       <button className="controlEmpleados__opciones__boton" onClick={()=>setEsVerRegistros(empleado.usuarioId)}><FontAwesomeIcon className="controlEmpleados__icon" icon={faList} /></button>
     </div>
     <Typography variant="h5" gutterBottom className="controlEmpleados__nombre">{empleado.nombre}</Typography>
-    <div className="controlEmpleados__boton"><Button color="primary" disabled={registrosRedux[0]?.tipo==="entrada"?true:false} variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado)}>Entrada</Button></div>
-    <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} disabled={registrosRedux[0]?.tipo==="salida"?true:false} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
+    <div className="controlEmpleados__boton"><Button color="primary" disabled={registros[0]?.tipo==="entrada"||errorSalidaDiaAnterior?true:false} variant={horaEntrada?"outlined":"contained"} className="controlEmpleados__boton" onClick={()=>entrada(empleado)}>Entrada</Button></div>
+    <div className="controlEmpleados__boton"><Button variant={horaSalida?"outlined":"contained"} disabled={((registros[0]?.tipo==="salida")&&(registros[0]))||errorSalidaDiaAnterior?true:false} className="controlEmpleados__boton" onClick={()=>salida(empleado.usuarioId)}>Salida</Button></div>
     <div className="controlEmpleados__hora"><div>{horaEntrada?horaEntrada:"-"}</div></div>
     <div className="controlEmpleados__hora"><div>{horaSalida?horaSalida:"-"}</div></div>
     {empleado.esControlHoras===1 && <div className="controlEmpleados__estadisticas">
@@ -129,7 +146,7 @@ const ControlEmpleados=({empleado,setEsAbrirConfiguracion,setEsVerRegistros}:{em
 
     </div>}
 
-
+    <ModalErrorEntrada open={esModalError} setOpen={setEsModalError} registroEntrada={registros[0]} funcionAceptar={salida} usuarioId={empleado.usuarioId}/>
   </div></>)
 }
 

@@ -30,7 +30,6 @@ export function usuariosControllers() {
                 WHERE usuarioId= ?`,
                 [empleado.nombre,empleado.diasRacha,empleado.puntosPuntualidad,empleado.esControlHoras,empleado.esControlPuntualidad,empleado.usuarioId],
                 function (err) {
-                    console.log("SE solicito modificar el usuario" , empleado, err)
                     if (err) reject('Error al modificar el usuario: ' + err.message);
                     resolve(`Usuario modificado con ID: ${empleado.usuarioId}`);
                 }

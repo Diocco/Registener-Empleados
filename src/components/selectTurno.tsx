@@ -1,7 +1,7 @@
 import { Box } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import BasicSelect from "./select"
-import SliderHora from "./sliderHora";
+import {SliderHora }from "./sliderHora";
 import { TurnosI } from "../interfaces/turnos";
 import {produce} from "immer"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

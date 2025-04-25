@@ -18,8 +18,8 @@ export const obtenerSalidas=async ()=>{
     return respuesta
 }
 
-export const marcarSalida=async ({usuarioId}:{usuarioId:string})=>{
-    const respuesta = await ipcRenderer.invoke('salida-empleado',usuarioId);
+export const marcarSalida=async ({usuarioId,hora}:{usuarioId:string,hora?:Date})=>{
+    const respuesta = await ipcRenderer.invoke('salida-empleado',usuarioId,hora);
     return respuesta
 }
 

@@ -6,7 +6,7 @@
     "startdev": "npm run build && electron ./src/main/index.js ",
     "start": "electron ./src/main/index.js ",
     "dev": "webpack serve --config webpack.config.cjs --mode development",
-    "dist": "tsc && electron-builder",
+    "dist": "tsc && npm run electron-build --win --ia32",
     "build": "tsc && webpack"
   },
   "dist": {

@@ -5,14 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 export function salidasControllers() {
 
-    ipcMain.handle('salida-empleado', async (_event, usuarioId: string) => {
+    ipcMain.handle('salida-empleado', async (_event, usuarioId: string, hora:Date=new Date()) => {
         return new Promise((resolve, reject) => {
             const id = uuidv4(); 
-            const horaSalida = new Date().getTime()
 
             db.run(
                 `INSERT INTO salidas (id,usuarioId,horaSalida) VALUES (?, ?, ?)`,
-                [id,usuarioId,horaSalida],
+                [id,usuarioId,hora.getTime()],
                 function (err) {
                     if (err) reject('Error al insertar: ' + err.message);
                     resolve(`Salida registrada con id: ${id}`);

@@ -89,7 +89,7 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
 export const TablaRegistros=({rows,empleados}:{rows:RegistrosI[],empleados:UsuariosI[]}) =>{
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
+  const theme = useTheme()
     React.useEffect(()=>{ // Cada vez que se cambian los registros de entrada se debe volver al estado inicial los state
         setPage(0);
         setRowsPerPage(5);
@@ -118,6 +118,17 @@ export const TablaRegistros=({rows,empleados}:{rows:RegistrosI[],empleados:Usuar
       <TableContainer component={Paper} id="registro__tablaCustom" > 
         <Table sx={{ minWidth: 500 }} aria-label="custom pagination table" >
           <TableBody >
+            <TableRow >
+              <TableCell component="th" scope="row" >
+                <div className="textoOpaco" >Nombre</div>
+              </TableCell>
+              <TableCell style={{ width: 160 }} align="right">
+                <div className="textoOpaco" >Tipo</div>
+              </TableCell>
+              <TableCell style={{ width: 160 }} align="right">
+                <div className="textoOpaco" >Fecha</div>
+              </TableCell>
+            </TableRow>
             {(rowsPerPage > 0
               ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               : rows
